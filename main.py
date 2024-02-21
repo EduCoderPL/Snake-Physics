@@ -1,268 +1,74 @@
 import random
-
 import pygame
 from pygame.locals import *
-
 from constants import *
+from snake import Snake
+from apple import Apple
 
 
-class Snake:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
 
-        self.xVel = 0
-        self.yVel = 0
 
-        self.rect = Rect(self.x, self.y, 50, 50)
 
-        self.tail = []
-        self.colorList = []
-        self.length = 5
+class Game:
 
-        self.dangerLimit = 60
-    def update(self):
+    def __init__(self):
+        pygame.init()
+        self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+        self.clock = pygame.time.Clock()
+        self.font = pygame.font.SysFont(None, 48)
+        self.player = Snake(300, 300, self)
+        self.apple = Apple(600, 600, self)
+        self.points = 0
 
-        self.yVel += 0.1
+        self.game_loop()
+    def game_loop(self):
+        running = True
+        while running:
 
-        self.xVel *= 0.99
-        self.yVel *= 0.99
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                    break
 
-        self.x += self.xVel
-        self.y += self.yVel
+            # ------------- CONTROLS --------------- #
+            keys = pygame.key.get_pressed()
 
-        self.check_collision_with_borders()
+            if keys[K_w]:
+                self.player.yVel -= 0.5
+            if keys[K_s]:
+                self.player.yVel += 0.5
+            if keys[K_a]:
+                self.player.xVel -= 0.5
+            if keys[K_d]:
+                self.player.xVel += 0.5
 
-        self.rect = Rect(self.x, self.y, 50, 50)
+            # ------------- GAME LOGIC --------------- #
+            self.player.update()
+            self.apple.update()
 
-        self.manage_tail()
+            if self.player.check_self_collision():
+                running = False
 
-    def manage_tail(self):
-        self.tail.append(Rect(self.x, self.y, 50, 50))
-        self.colorList.append((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
-        if len(self.tail) > self.length:
-            self.tail.pop(0)
-            self.colorList.pop(0)
+            if self.player.rect.colliderect(self.apple.rect):
 
-    def check_collision_with_borders(self):
-        if self.x < 0:
-            self.x = 0
-            self.xVel *= -1
-        if self.x > SCREEN_WIDTH - 50:
-            self.x = SCREEN_WIDTH - 50
-            self.xVel *= -1
-        if self.y < 0:
-            self.y = 0
-            self.yVel *= -1
-        if self.y > SCREEN_HEIGHT - 50:
-            self.y = SCREEN_HEIGHT - 50
-            self.yVel *= -1
+                self.player.make_snake_longer()
+                self.apple.change_position()
 
-    def make_snake_longer(self):
-        self.length += 4
+                self.points += 1
 
+            # ------------- GRAPHICS --------------- #
+            self.screen.fill((0, 0, 0))
+            self.player.draw()
+            self.apple.draw()
 
-    def check_self_collision(self):
-        for i, rect in enumerate(self.tail):
-            newRect = rect.scale_by((i + 1) / self.length)
-            if self.length - i > self.dangerLimit:
-                if self.rect.colliderect(newRect):
-                    return True
+            text = self.font.render(f'Score: {self.points}', True, (255, 255, 255))
+            self.screen.blit(text, (10, 10))
 
-        return False
+            # ------------- GAME UPDATE --------------- #
+            pygame.display.flip()
+            self.clock.tick(60)
 
-    def draw(self):
-        self.draw_tail()
-        self.draw_head()
+        pygame.quit()
 
-    def draw_tail(self):
-        for i, (rect, color) in enumerate(zip(self.tail, self.colorList)):
 
-            newRect = rect.scale_by((i + 1) / self.length)
-            colorBlendingCoef = (i / self.length)
-
-            blendedColor = (
-                color[0] * colorBlendingCoef,
-                color[1] * colorBlendingCoef,
-                color[2] * colorBlendingCoef
-            )
-
-            if self.length - i > self.dangerLimit:
-                pygame.draw.rect(screen, (255, 100, 100), newRect.scale_by(1.2))
-
-            pygame.draw.rect(screen, blendedColor, newRect)
-    def draw_head(self):
-        pygame.draw.rect(screen, (255, 255, 255), self.rect.scale_by(1.1))
-        pygame.draw.rect(screen, (255, 255, 0), self.rect)
-
-class Apple:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-        self.rect = Rect(self.x, self.y, 50, 50)
-
-        self.xVel = 0
-        self.yVel = 0
-
-        self.state = 0
-
-    def change_position(self):
-        self.x = random.randint(50, SCREEN_WIDTH - 50)
-        self.y = random.randint(50, SCREEN_HEIGHT - 50)
-        self.rect = Rect(self.x, self.y, 50, 50)
-
-        self.state = random.randint(0, 3)
-        self.xVel = random.uniform(-5, 5)
-        self.yVel = random.uniform(-5, 5)
-
-    def move_fixed(self):
-        self.x += self.xVel
-        self.y += self.yVel
-
-        if self.x < 0:
-            self.x = 0
-            self.xVel *= -1
-
-        if self.x > SCREEN_WIDTH - 50:
-            self.x = SCREEN_WIDTH - 50
-            self.xVel *= -1
-
-        if self.y < 0:
-            self.y = 0
-            self.yVel *= -1
-
-        if self.y > SCREEN_HEIGHT - 50:
-            self.y = SCREEN_HEIGHT - 50
-            self.yVel *= -1
-
-    def move_fixed_gravity(self):
-        self.yVel += 0.1
-
-        self.x += self.xVel
-        self.y += self.yVel
-
-        if self.x < 0:
-            self.x = 0
-            self.xVel *= -1
-
-        if self.x > SCREEN_WIDTH - 50:
-            self.x = SCREEN_WIDTH - 50
-            self.xVel *= -1
-
-        if self.y < 0:
-            self.y = 0
-            self.yVel = 0
-
-        if self.y > SCREEN_HEIGHT - 50:
-            self.y = SCREEN_HEIGHT - 50
-            self.yVel *= -3
-
-    def flee(self):
-        vectorToTargetX = self.x - player.x
-        vectorToTargetY = self.y - player.y
-
-        vectorToTargetMagnitude = vectorToTargetX ** 2 + vectorToTargetY ** 2
-        vectorToTargetNormalizedX = vectorToTargetX / vectorToTargetMagnitude
-        vectorToTargetNormalizedY = vectorToTargetY / vectorToTargetMagnitude
-
-        self.xVel += vectorToTargetNormalizedX * 75
-        self.yVel += vectorToTargetNormalizedY * 75
-
-        self.yVel += 0.1
-
-        self.x += self.xVel
-        self.y += self.yVel
-
-        if self.x < 0:
-            self.x = 0
-            self.xVel *= -1
-
-        if self.x > SCREEN_WIDTH - 50:
-            self.x = SCREEN_WIDTH - 50
-            self.xVel *= -1
-
-        if self.y < 0:
-            self.y = 0
-            self.yVel *= -1
-
-        if self.y > SCREEN_HEIGHT - 50:
-            self.y = SCREEN_HEIGHT - 50
-            self.yVel *= -1
-
-    def update(self):
-        if self.state == 1:
-            self.move_fixed()
-        if self.state == 2:
-            self.move_fixed_gravity()
-        if self.state == 3:
-            self.flee()
-
-
-        self.rect = Rect(self.x, self.y, 50, 50)
-    def draw(self):
-        pygame.draw.ellipse(screen, (255, 0, 0), self.rect)
-
-pygame.init()
-
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-
-clock = pygame.time.Clock()
-
-font = pygame.font.SysFont(None, 48)
-
-# PLAYER:
-player = Snake(300, 300)
-apple = Apple(600, 600)
-
-points = 0
-
-running = True
-
-while running:
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-            break
-
-    # ------------- CONTROLS --------------- #
-    keys = pygame.key.get_pressed()
-
-    if keys[K_w]:
-        player.yVel -= 0.5
-    if keys[K_s]:
-        player.yVel += 0.5
-    if keys[K_a]:
-        player.xVel -= 0.5
-    if keys[K_d]:
-        player.xVel += 0.5
-
-    # ------------- GAME LOGIC --------------- #
-    player.update()
-
-    apple.update()
-
-
-    if player.check_self_collision():
-        running = False
-
-    if player.rect.colliderect(apple.rect):
-
-        player.make_snake_longer()
-        apple.change_position()
-
-        points += 1
-
-    # ------------- GRAPHICS --------------- #
-    screen.fill((0, 0, 0))
-    player.draw()
-    apple.draw()
-
-    text = font.render(f'Score: {points}', True, (255, 255, 255))
-    screen.blit(text, (10, 10))
-
-    # ------------- GAME UPDATE --------------- #
-    pygame.display.flip()
-    clock.tick(60)
-
-pygame.quit()
+game = Game()
