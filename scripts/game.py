@@ -17,7 +17,7 @@ class Game:
         pygame.init()
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         self.clock = pygame.time.Clock()
-        self.font = pygame.font.SysFont(None, 48)
+        self.font = pygame.font.SysFont("Ink Free", 72)
 
         self.gameStateManager = GameSceneManager('menu')
         self.sceneMenu = MenuScene(self, self.gameStateManager)
@@ -86,6 +86,8 @@ class Game:
 
     def show_main_menu(self):
 
+
+
         keys = pygame.key.get_pressed()
         if keys[K_SPACE]:
             self.gameStateManager.set_state('game')
@@ -94,7 +96,9 @@ class Game:
             self.exit_game()
 
         self.screen.fill((0, 0, 0))
-
+        start_text = self.font.render("SNAKE WITH PHYSICS", True, (255, 255, 255))
+        start_text_rect = start_text.get_rect(center=(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 150))
+        self.screen.blit(start_text, start_text_rect)
         self.startButton.draw()
         self.exitButton.draw()
 
@@ -109,4 +113,5 @@ class Game:
         self.running = True
 
     def exit_game(self):
-        self.running = False
+        # self.running = False
+        pass
