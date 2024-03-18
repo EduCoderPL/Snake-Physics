@@ -1,2 +1,2 @@
-Link to game:
+## Link to game:
 https://educoderpl.itch.io/snake-with-physics
