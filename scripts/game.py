@@ -3,11 +3,13 @@ import asyncio
 import pygame
 from pygame.locals import *
 from constants import *
+from scripts.UI.button import Button
 from scripts.scenes.gameScene import GameScene
 from scripts.scenes.gameSceneManager import GameSceneManager
 from scripts.scenes.menuScene import MenuScene
 from scripts.gameObjects.snake import Snake
 from scripts.gameObjects.apple import Apple
+
 
 class Game:
 
@@ -28,6 +30,11 @@ class Game:
         self.points = 0
         self.running = True
 
+        self.startButton = Button("START GAME", 300, 60, (SCREEN_WIDTH / 2 - 150, SCREEN_HEIGHT / 2 - 50), 5, self,
+                                  self.start_game_scene)
+        self.exitButton = Button("EXIT", 300, 60, (SCREEN_WIDTH / 2 - 150, SCREEN_HEIGHT / 2 + 50), 5, self,
+                                 self.exit_game)
+
     async def start_game(self):
         await self.game_loop()
 
@@ -44,7 +51,7 @@ class Game:
     def trigger_close_game(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                self.running = False
+                self.exit_game()
                 break
 
     def update_input(self):
@@ -84,23 +91,22 @@ class Game:
             self.gameStateManager.set_state('game')
             self.reset_game()
         if keys[K_ESCAPE]:
-            self.running = False
+            self.exit_game()
 
         self.screen.fill((0, 0, 0))
-        menu_text = self.font.render("Snake Game", True, (255, 255, 255))
-        menu_text_rect = menu_text.get_rect(center=(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 50))
-        self.screen.blit(menu_text, menu_text_rect)
 
-        start_text = self.font.render("Press SPACE to start", True, (255, 255, 255))
-        start_text_rect = start_text.get_rect(center=(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 50))
-        self.screen.blit(start_text, start_text_rect)
+        self.startButton.draw()
+        self.exitButton.draw()
 
-        start_text = self.font.render("Press Esc to exit.", True, (255, 255, 255))
-        start_text_rect = start_text.get_rect(center=(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 150))
-        self.screen.blit(start_text, start_text_rect)
+    def start_game_scene(self):
+        self.gameStateManager.set_state('game')
+        self.reset_game()
 
     def reset_game(self):
         self.player = Snake(300, 300, self)
         self.apple = Apple(600, 600, self)
         self.points = 0
         self.running = True
+
+    def exit_game(self):
+        self.running = False
