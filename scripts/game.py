@@ -5,6 +5,7 @@ from pygame.locals import *
 from constants import *
 from pygame import mixer
 from scripts.UI.button import Button
+from scripts.UI.gameText import render_text
 from scripts.scenes.creditsScene import CreditsScene
 from scripts.scenes.gameScene import GameScene
 from scripts.scenes.gameSceneManager import GameSceneManager
@@ -39,14 +40,13 @@ class Game:
                                   self.start_game_scene)
 
         self.creditsButton = Button("CREDITS", 300, 60, (SCREEN_WIDTH / 2 - 150, SCREEN_HEIGHT / 2 + 50), 5, self,
-                                 self.go_to_credtis)
+                                    self.go_to_credtis)
 
         self.exitButton = Button("EXIT", 300, 60, (SCREEN_WIDTH / 2 - 150, SCREEN_HEIGHT / 2 + 150), 5, self,
                                  self.exit_game)
 
         self.menuButton = Button("GO TO MENU", 300, 60, (SCREEN_WIDTH / 2 - 150, SCREEN_HEIGHT / 2 + 150), 5, self,
                                  self.go_to_menu)
-
 
         mixer.init()
         mixer.music.load("audio/pysnake.wav")
@@ -56,7 +56,6 @@ class Game:
         self.soundApple = mixer.Sound("audio/powerUp.wav")
         self.soundWall = mixer.Sound("audio/hitHurt_1.wav")
         self.soundDeath = mixer.Sound("audio/explosion.wav")
-
 
     async def start_game(self):
         await self.game_loop()
@@ -93,7 +92,7 @@ class Game:
         self.apple.update()
         if self.player.check_self_collision():
             self.soundDeath.play()
-            self.gameStateManager.set_state('menu')
+            self.go_to_menu()
 
         if self.player.rect.colliderect(self.apple.rect):
             self.player.make_snake_longer()
@@ -106,8 +105,7 @@ class Game:
         self.player.draw()
         self.apple.draw()
 
-        text = self.font.render(f'Score: {self.points}', True, (255, 255, 255))
-        self.screen.blit(text, (10, 10))
+        render_text(self, f'Score: {self.points}', self.font, (130, 35))
 
     def show_main_menu(self):
         keys = pygame.key.get_pressed()
@@ -115,9 +113,8 @@ class Game:
             self.exit_game()
 
         self.screen.fill((0, 0, 0))
-        start_text = self.font.render("SNAKE WITH PHYSICS", True, (255, 255, 255))
-        start_text_rect = start_text.get_rect(center=(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 150))
-        self.screen.blit(start_text, start_text_rect)
+        render_text(self, "SNAKE WITH PHYSICS", self.font, (SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 150))
+
         self.startButton.draw()
         self.creditsButton.draw()
         self.exitButton.draw()
@@ -125,19 +122,15 @@ class Game:
     def show_credits(self):
 
         self.screen.fill((0, 0, 0))
-        start_text = self.smallFont.render("Game design/development: EduCoder (me)", True, (255, 255, 255))
-        start_text_rect = start_text.get_rect(center=(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 150))
-        self.screen.blit(start_text, start_text_rect)
-
-        start_text = self.smallFont.render("Audio: SlimyKoala", True, (255, 255, 255))
-        start_text_rect = start_text.get_rect(center=(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 ))
-        self.screen.blit(start_text, start_text_rect)
+        render_text(self, "Game design/development: EduCoder (me)", self.smallFont,
+                    (SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 150))
+        render_text(self, "Audio: SlimyKoala", self.smallFont, (SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2))
 
         self.menuButton.draw()
 
     def start_game_scene(self):
-        self.gameStateManager.set_state('game')
         self.reset_game()
+        self.gameStateManager.set_state('game')
 
     def reset_game(self):
         self.player = Snake(300, 300, self)
@@ -145,12 +138,12 @@ class Game:
         self.points = 0
         self.running = True
 
-    def exit_game(self):
-        # self.running = False
-        pass
+    def go_to_credtis(self):
+        self.gameStateManager.set_state('credits')
 
     def go_to_menu(self):
         self.gameStateManager.set_state('menu')
 
-    def go_to_credtis(self):
-        self.gameStateManager.set_state('credits')
+    def exit_game(self):
+        # self.running = False
+        pass
