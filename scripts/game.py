@@ -17,7 +17,7 @@ class Game:
         pygame.init()
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         self.clock = pygame.time.Clock()
-        self.font = pygame.font.SysFont("Ink Free", 72)
+        self.font = pygame.font.Font("Inkfree.ttf", 72)
 
         self.gameStateManager = GameSceneManager('menu')
         self.sceneMenu = MenuScene(self, self.gameStateManager)

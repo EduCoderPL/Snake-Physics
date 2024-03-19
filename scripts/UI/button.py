@@ -1,7 +1,7 @@
 import pygame
 
 pygame.init()
-gui_font = pygame.font.SysFont("Ink Free", 30)
+gui_font = pygame.font.Font("Inkfree.ttf", 30)
 
 
 class Button:

@@ -2,6 +2,7 @@ import pygame
 from pygame.locals import *
 import random
 
+
 class Apple:
     def __init__(self, x, y, game):
         self.x = x
@@ -106,5 +107,6 @@ class Apple:
             self.flee()
 
         self.rect = Rect(self.x, self.y, 50, 50)
+
     def draw(self):
         pygame.draw.ellipse(self.game.screen, (255, 0, 0), self.rect)
