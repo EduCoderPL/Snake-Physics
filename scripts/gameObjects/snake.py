@@ -47,15 +47,19 @@ class Snake:
         if self.x < 0:
             self.x = 0
             self.xVel *= -1
+            self.game.soundWall.play()
         if self.x > self.game.screen.get_width() - 50:
             self.x = self.game.screen.get_width() - 50
             self.xVel *= -1
+            self.game.soundWall.play()
         if self.y < 0:
             self.y = 0
             self.yVel *= -1
+            self.game.soundWall.play()
         if self.y > self.game.screen.get_height() - 50:
             self.y = self.game.screen.get_height() - 50
             self.yVel *= -1
+            self.game.soundWall.play()
 
     def make_snake_longer(self):
         self.length += 4

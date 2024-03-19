@@ -3,7 +3,9 @@ import asyncio
 import pygame
 from pygame.locals import *
 from constants import *
+from pygame import mixer
 from scripts.UI.button import Button
+from scripts.scenes.creditsScene import CreditsScene
 from scripts.scenes.gameScene import GameScene
 from scripts.scenes.gameSceneManager import GameSceneManager
 from scripts.scenes.menuScene import MenuScene
@@ -15,15 +17,18 @@ class Game:
 
     def __init__(self):
         pygame.init()
+
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         self.clock = pygame.time.Clock()
         self.font = pygame.font.Font("Inkfree.ttf", 72)
+        self.smallFont = pygame.font.Font("Inkfree.ttf", 48)
 
         self.gameStateManager = GameSceneManager('menu')
         self.sceneMenu = MenuScene(self, self.gameStateManager)
         self.sceneGame = GameScene(self, self.gameStateManager)
+        self.sceneCredits = CreditsScene(self, self.gameStateManager)
 
-        self.states = {'menu': self.sceneMenu, 'game': self.sceneGame}
+        self.states = {'menu': self.sceneMenu, 'game': self.sceneGame, 'credits': self.sceneCredits}
 
         self.player = Snake(300, 300, self)
         self.apple = Apple(600, 600, self)
@@ -32,8 +37,26 @@ class Game:
 
         self.startButton = Button("START GAME", 300, 60, (SCREEN_WIDTH / 2 - 150, SCREEN_HEIGHT / 2 - 50), 5, self,
                                   self.start_game_scene)
-        self.exitButton = Button("EXIT", 300, 60, (SCREEN_WIDTH / 2 - 150, SCREEN_HEIGHT / 2 + 50), 5, self,
+
+        self.creditsButton = Button("CREDITS", 300, 60, (SCREEN_WIDTH / 2 - 150, SCREEN_HEIGHT / 2 + 50), 5, self,
+                                 self.go_to_credtis)
+
+        self.exitButton = Button("EXIT", 300, 60, (SCREEN_WIDTH / 2 - 150, SCREEN_HEIGHT / 2 + 150), 5, self,
                                  self.exit_game)
+
+        self.menuButton = Button("GO TO MENU", 300, 60, (SCREEN_WIDTH / 2 - 150, SCREEN_HEIGHT / 2 + 150), 5, self,
+                                 self.go_to_menu)
+
+
+        mixer.init()
+        mixer.music.load("audio/pysnake.wav")
+        mixer.music.set_volume(1)
+        mixer.music.play(-1)
+
+        self.soundApple = mixer.Sound("audio/powerUp.wav")
+        self.soundWall = mixer.Sound("audio/hitHurt_1.wav")
+        self.soundDeath = mixer.Sound("audio/explosion.wav")
+
 
     async def start_game(self):
         await self.game_loop()
@@ -69,12 +92,14 @@ class Game:
         self.player.update()
         self.apple.update()
         if self.player.check_self_collision():
+            self.soundDeath.play()
             self.gameStateManager.set_state('menu')
 
         if self.player.rect.colliderect(self.apple.rect):
             self.player.make_snake_longer()
             self.apple.change_position()
             self.points += 1
+            self.soundApple.play()
 
     def update_graphics(self):
         self.screen.fill((0, 0, 0))
@@ -85,13 +110,7 @@ class Game:
         self.screen.blit(text, (10, 10))
 
     def show_main_menu(self):
-
-
-
         keys = pygame.key.get_pressed()
-        if keys[K_SPACE]:
-            self.gameStateManager.set_state('game')
-            self.reset_game()
         if keys[K_ESCAPE]:
             self.exit_game()
 
@@ -100,7 +119,21 @@ class Game:
         start_text_rect = start_text.get_rect(center=(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 150))
         self.screen.blit(start_text, start_text_rect)
         self.startButton.draw()
+        self.creditsButton.draw()
         self.exitButton.draw()
+
+    def show_credits(self):
+
+        self.screen.fill((0, 0, 0))
+        start_text = self.smallFont.render("Game design/development: EduCoder (me)", True, (255, 255, 255))
+        start_text_rect = start_text.get_rect(center=(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 150))
+        self.screen.blit(start_text, start_text_rect)
+
+        start_text = self.smallFont.render("Audio: SlimyKoala", True, (255, 255, 255))
+        start_text_rect = start_text.get_rect(center=(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 ))
+        self.screen.blit(start_text, start_text_rect)
+
+        self.menuButton.draw()
 
     def start_game_scene(self):
         self.gameStateManager.set_state('game')
@@ -115,3 +148,9 @@ class Game:
     def exit_game(self):
         # self.running = False
         pass
+
+    def go_to_menu(self):
+        self.gameStateManager.set_state('menu')
+
+    def go_to_credtis(self):
+        self.gameStateManager.set_state('credits')
