@@ -14,6 +14,8 @@ class Apple:
 
         self.state = 0
         self.game = game
+        self.colorList = [(255, 0, 0), (0, 255, 0), (0, 0, 255)]
+        self.color = self.colorList[0]
 
     def change_position(self):
         self.x = random.randint(50, self.game.screen.get_width() - 50)
@@ -106,7 +108,9 @@ class Apple:
         if self.state == 3:
             self.flee()
 
+        self.color = self.colorList[self.state - 1]
+
         self.rect = Rect(self.x, self.y, 50, 50)
 
     def draw(self):
-        pygame.draw.ellipse(self.game.screen, (255, 0, 0), self.rect)
+        pygame.draw.ellipse(self.game.screen, self.color, self.rect)
