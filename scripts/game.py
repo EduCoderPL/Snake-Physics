@@ -12,7 +12,7 @@ from scripts.scenes.gameSceneManager import GameSceneManager
 from scripts.scenes.menuScene import MenuScene
 from scripts.gameObjects.snake import Snake
 from scripts.gameObjects.apple import Apple
-
+from timerManager import TimerManager, Timer
 
 class Game:
 
@@ -28,6 +28,9 @@ class Game:
         self.sceneMenu = MenuScene(self, self.gameStateManager)
         self.sceneGame = GameScene(self, self.gameStateManager)
         self.sceneCredits = CreditsScene(self, self.gameStateManager)
+
+
+
 
         self.states = {'menu': self.sceneMenu, 'game': self.sceneGame, 'credits': self.sceneCredits}
 
@@ -63,6 +66,7 @@ class Game:
     async def game_loop(self):
 
         while self.running:
+            TimerManager.update()
             self.trigger_close_game()
             self.states[self.gameStateManager.get_state()].run()
 
